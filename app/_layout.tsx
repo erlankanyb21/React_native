@@ -53,22 +53,22 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
-      <RootLayoutNav />
-    </ClerkProvider>
+
+    <RootLayoutNav />
+
   );
 }
 
 function RootLayoutNav() {
-  const { isLoaded, isSignedIn } = useAuth();
+  // const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
-  // Automatically open login if user is not authenticated
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/(modals)/login');
-    }
-  }, [isLoaded]);
+  // // Automatically open login if user is not authenticated
+  // useEffect(() => {
+  //   if (isLoaded && !isSignedIn) {
+  //     router.push('/(modals)/login');
+  //   }
+  // }, [isLoaded]);
 
   return (
     <Stack>
