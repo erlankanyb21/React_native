@@ -17,13 +17,9 @@ const Page = () => {
   };
 
   return (
-    <View style={{ flex: 1, marginTop: 80 }}>
+    <View style={{ flex: 1,}}>
       {/* Define pour custom header */}
-      <Stack.Screen
-        options={{
-          header: () => <ExploreHeader onCategoryChanged={onDataChanged} />,
-        }}
-      />
+    
       <ListingsMap listings={getoItems} />
       <ListingsBottomSheet listings={items} category={category} />
     </View>
