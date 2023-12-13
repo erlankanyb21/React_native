@@ -5,7 +5,6 @@ import listingsData from '@/assets/data/airbnb-listings.json';
 import ListingsMap from '@/components/ListingsMap';
 import listingsDataGeo from '@/assets/data/airbnb-listings.geo.json';
 import { Stack } from 'expo-router';
-import ExploreHeader from '@/components/ExploreHeader';
 
 const Page = () => {
   const items = useMemo(() => listingsData as any, []);

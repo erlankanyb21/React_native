@@ -31,27 +31,10 @@ const Layout = () => {
         }}
       />
       <Tabs.Screen
-        name="trips"
-        options={{
-          tabBarLabel: 'Trips',
-          tabBarIcon: ({ size, color }) => <FontAwesome5 name="airbnb" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="inbox"
-        options={{
-          tabBarLabel: 'Inbox',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="message-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           tabBarLabel: 'Profile',
 
-          headerShown: false,
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="person-circle-outline" size={size} color={color} />
           ),

@@ -1,169 +1,107 @@
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  SafeAreaView,
-  Image,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useAuth, useUser } from '@clerk/clerk-expo';
-import { defaultStyles } from '@/constants/Styles';
-import { Ionicons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { Link } from 'expo-router';
+import React, { Component } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Avatar, Card, Title } from 'react-native-paper';
 
-const Page = () => {
-  // const { signOut, isSignedIn } = useAuth();
-  // const { user } = useUser();
-  // const [firstName, setFirstName] = useState(user?.firstName);
-  // const [lastName, setLastName] = useState(user?.lastName);
-  // const [email, setEmail] = useState(user?.emailAddresses[0].emailAddress);
-  const [edit, setEdit] = useState(true);
+interface ProfileState {
+  inputValue: string;
+  selectedImage: string | null;
+}
 
-  // // Load user data on mount
-  // useEffect(() => {
-  //   if (!user) {
-  //     return;
-  //   }
+class Profile extends Component<{}, ProfileState> {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      inputValue: '',
+      selectedImage: null,
+    };
+  }
 
-  //   setFirstName(user.firstName);
-  //   setLastName(user.lastName);
-  //   setEmail(user.emailAddresses[0].emailAddress);
-  // }, [user]);
-
-  // Update Clerk user data
-  // const onSaveUser = async () => {
-  //   try {
-  //     await user?.update({
-  //       firstName: firstName!,
-  //       lastName: lastName!,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     setEdit(false);
-  //   }
-  // };
-
-  // Capture image from camera roll
-  // Upload to Clerk as avatar
-  const onCaptureImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.75,
-      base64: true,
-    });
-
-    // if (!result.canceled) {
-    //   const base64 = `data:image/png;base64,${result.assets[0].base64}`;
-    //   user?.setProfileImage({
-    //     file: base64,
-    //   });
-    // }
+  handleInputChange = (text: string) => {
+    this.setState({ inputValue: text });
   };
 
-  return (
-    <SafeAreaView style={defaultStyles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.header}>Profile</Text>
-        <Ionicons name="notifications-outline" size={26} />
+  handleImagePicker = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      console.log('Отказано в доступе к галерее');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    if (!result.canceled) {
+      this.setState({ selectedImage: result.assets[0].uri });
+    }
+  };
+
+  render() {
+    return (
+      <View style={{ padding: 16, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Card>
+          <Card.Content>
+            {/* Аватар с выбранным изображением */}
+            <View style={{ alignItems: 'center' }}>
+              <Avatar.Image
+                size={100}
+                source={
+                  this.state.selectedImage
+                    ? { uri: this.state.selectedImage }
+                    : {}
+                }
+              />
+            </View>
+            <Title style={{ marginTop: 10, textAlign: 'center' }}>Профиль</Title>
+
+            {/* Поле ввода */}
+            <TextInput
+              placeholder="Введите что-то"
+              value={this.state.inputValue}
+              onChangeText={this.handleInputChange}
+              style={{ marginTop: 16, marginBottom: 16, borderBottomWidth: 1, paddingVertical: 8 }}
+            />
+
+            {/* Кнопка для отображения введенного значения */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#3498db',
+                padding: 10,
+                borderRadius: 5,
+                marginBottom: 10,
+              }}
+              onPress={() => {
+                alert(this.state.inputValue);
+              }}
+            >
+              <Text style={{ color: 'white', textAlign: 'center' }}>Показать введенное значение</Text>
+            </TouchableOpacity>
+
+            {/* Выбор фото */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#2ecc71',
+                padding: 10,
+                borderRadius: 5,
+                marginBottom: 10,
+              }}
+              onPress={this.handleImagePicker}
+            >
+              <Text style={{ color: 'white', textAlign: 'center' }}>Выбрать фото</Text>
+            </TouchableOpacity>
+
+            {/* Отображение выбранного фото */}
+            {this.state.selectedImage && (
+              <Image
+                source={{ uri: this.state.selectedImage }}
+                style={{ width: '100%', height: 200, marginTop: 16, borderRadius: 8 }}
+              />
+            )}
+          </Card.Content>
+        </Card>
       </View>
+    );
+  }
+}
 
-      { (
-        <View style={styles.card}>
-          <TouchableOpacity onPress={onCaptureImage}>
-            {/* <Image source={{ uri: user?.imageUrl }} style={styles.avatar} /> */}
-          </TouchableOpacity>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            {!edit && (
-              <View style={styles.editRow}>
-                <Text style={{ fontFamily: 'mon-b', fontSize: 22 }}>
-              
-                </Text>
-                <TouchableOpacity onPress={() => setEdit(true)}>
-                  <Ionicons name="create-outline" size={24} color={Colors.dark} />
-                </TouchableOpacity>
-              </View>
-            )}
-            {edit && (
-              <View style={styles.editRow}>
-                <TextInput
-                  placeholder="First Name"
-                  value={ ''}
-                  style={[defaultStyles.inputField, { width: 100 }]}
-                />
-                <TextInput
-                  placeholder="Last Name"
-                  value={''}
-                  style={[defaultStyles.inputField, { width: 100 }]}
-                />
-                <TouchableOpacity>
-                  <Ionicons name="checkmark-outline" size={24} color={Colors.dark} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          <Text></Text>
-          <Text>Since </Text>
-        </View>
-      )}
-
-      {/* {isSignedIn && <Button title="Log Out" onPress={() => signOut()} color={Colors.dark} />}
-      {!isSignedIn && (
-        <Link href={'/(modals)/login'} asChild>
-          <Button title="Log In" color={Colors.dark} />
-        </Link>
-      )} */}
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 24,
-  },
-  header: {
-    fontFamily: 'mon-b',
-    fontSize: 24,
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 16,
-    marginHorizontal: 24,
-    marginTop: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: {
-      width: 1,
-      height: 2,
-    },
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.grey,
-  },
-  editRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-});
-
-export default Page;
+export default Profile;
