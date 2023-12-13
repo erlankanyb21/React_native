@@ -11,9 +11,9 @@ const Page = () => {
   const getoItems = useMemo(() => listingsDataGeo, []);
   const [category, setCategory] = useState<string>('Tiny homes');
 
-  const onDataChanged = (category: string) => {
-    setCategory(category);
-  };
+  // const onDataChanged = (category: string) => {
+  //   setCategory(category);
+  // };
 
   return (
     <View style={{ flex: 1,}}>
