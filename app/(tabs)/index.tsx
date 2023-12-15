@@ -11,14 +11,10 @@ const Page = () => {
   const getoItems = useMemo(() => listingsDataGeo, []);
   const [category, setCategory] = useState<string>('Tiny homes');
 
-  // const onDataChanged = (category: string) => {
-  //   setCategory(category);
-  // };
-
   return (
-    <View style={{ flex: 1,}}>
+    <View style={{ flex: 1, }}>
       {/* Define pour custom header */}
-    
+
       <ListingsMap listings={getoItems} />
       <ListingsBottomSheet listings={items} category={category} />
     </View>

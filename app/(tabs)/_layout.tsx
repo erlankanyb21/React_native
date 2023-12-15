@@ -22,15 +22,6 @@ const Layout = () => {
         }}
       />
       <Tabs.Screen
-        name="whishlists"
-        options={{
-          tabBarLabel: 'Wishlists',
-          tabBarIcon: ({ size, color }) => (
-            <Ionicons name="heart-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           tabBarLabel: 'Profile',

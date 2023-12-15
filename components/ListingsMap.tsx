@@ -1,5 +1,6 @@
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import MapViewDirections from 'react-native-maps-directions';
 import { defaultStyles } from '@/constants/Styles';
 import { Marker } from 'react-native-maps';
 import MapView from 'react-native-map-clustering';
@@ -13,8 +14,8 @@ interface Props {
 }
 
 const INITIAL_REGION = {
-  latitude: 37.33,
-  longitude: -122,
+  latitude: 42.33,
+  longitude: 72.4555,
   latitudeDelta: 9,
   longitudeDelta: 9,
 };
@@ -33,6 +34,11 @@ const ListingsMap = memo(({ listings }: Props) => {
     router.push(`/listing/${event.properties.id}`);
   };
 
+  const [userLocation, setUserLocation] = useState({
+    latitude: 0,
+    longitude: 0,
+  })
+
   // Focus the map on the user's location
   const onLocateMe = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -45,9 +51,11 @@ const ListingsMap = memo(({ listings }: Props) => {
     const region = {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
-      latitudeDelta: 7,
-      longitudeDelta: 7,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
     };
+
+    setUserLocation(region);
 
     mapRef.current?.animateToRegion(region);
   };
@@ -89,21 +97,21 @@ const ListingsMap = memo(({ listings }: Props) => {
         clusterColor="#fff"
         clusterTextColor="#000"
         clusterFontFamily="mon-sb"
-        renderCluster={renderCluster}>
+        renderCluster={renderCluster}
+      >
         {/* Render all our marker as usual */}
-        {listings.features.map((item: any) => (
+        {userLocation.latitude !== 0 && userLocation.longitude !== 0 && (
           <Marker
             coordinate={{
-              latitude: item.properties.latitude,
-              longitude: item.properties.longitude,
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
             }}
-            key={item.properties.id}
-            onPress={() => onMarkerSelected(item)}>
+          >
             <View style={styles.marker}>
-              <Text style={styles.markerText}>€ {item.properties.price}</Text>
+            <Ionicons name="location-sharp" size={24} color={Colors.primary} />
             </View>
           </Marker>
-        ))}
+        )}
       </MapView>
       <TouchableOpacity style={styles.locateBtn} onPress={onLocateMe}>
         <Ionicons name="navigate" size={24} color={Colors.dark} />
