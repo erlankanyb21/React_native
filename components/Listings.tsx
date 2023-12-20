@@ -41,7 +41,7 @@ const Listings = ({ listings: items, refresh, category }: Props) => {
     <Link href={`/listing/${item.id}`} asChild>
       <TouchableOpacity>
         <Animated.View style={styles.listing} entering={FadeInRight} exiting={FadeOutLeft}>
-          <Animated.Image source={{ uri: item.medium_url }} style={styles.image} />
+          <Animated.Image source={{ uri: item.xl_picture_url }} style={styles.image} />
           <TouchableOpacity style={{ position: 'absolute', right: 30, top: 30 }}>
             <Ionicons name="heart-outline" size={24} color="#000" />
           </TouchableOpacity>

@@ -1,9 +1,6 @@
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import MapViewDirections from 'react-native-maps-directions';
-import { defaultStyles } from '@/constants/Styles';
-import { Marker } from 'react-native-maps';
-import MapView from 'react-native-map-clustering';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
@@ -22,24 +19,42 @@ const INITIAL_REGION = {
 
 const ListingsMap = memo(({ listings }: Props) => {
   const router = useRouter();
-  const mapRef = useRef<any>(null);
-
-  // When the component mounts, locate the user
-  useEffect(() => {
-    onLocateMe();
-  }, []);
-
-  // When a marker is selected, navigate to the listing page
-  const onMarkerSelected = (event: any) => {
-    router.push(`/listing/${event.properties.id}`);
-  };
+  const mapRef = useRef<MapView>(null);
 
   const [userLocation, setUserLocation] = useState({
     latitude: 0,
     longitude: 0,
-  })
+  });
 
-  // Focus the map on the user's location
+  const [destinationMarker, setDestinationMarker] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
+  const [distance, setDistance] = useState<number | null>(null);
+  const [destinationName, setDestinationName] = useState<string | null>('');
+
+  useEffect(() => {
+    onLocateMe();
+  }, []);
+
+  const onMarkerSelected = async (event: any) => {
+    if (event && event.properties && event.properties.id) {
+      const selectedMarker = event.coordinate;
+      setDestinationMarker(selectedMarker);
+
+      // Perform reverse geocoding to get the street name
+      const reverseGeocodeResult = await Location.reverseGeocodeAsync(selectedMarker);
+      const streetName = reverseGeocodeResult[0]?.street || 'Unknown Street';
+      setDestinationName(streetName);
+
+      calculateDistance(userLocation, selectedMarker);
+      router.push(`/listing/${event.properties.id}`);
+    } else {
+      // console.error('Invalid marker event:', event);
+    }
+  };
+
   const onLocateMe = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -47,7 +62,6 @@ const ListingsMap = memo(({ listings }: Props) => {
     }
 
     let location = await Location.getCurrentPositionAsync({});
-
     const region = {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
@@ -56,50 +70,75 @@ const ListingsMap = memo(({ listings }: Props) => {
     };
 
     setUserLocation(region);
-
     mapRef.current?.animateToRegion(region);
   };
 
-  // Overwrite the renderCluster function to customize the cluster markers
-  const renderCluster = (cluster: any) => {
-    const { id, geometry, onPress, properties } = cluster;
+  const handleMapPress = (event: any) => {
+    const { coordinate } = event.nativeEvent;
+    setDestinationMarker(coordinate);
+    calculateDistance(userLocation, coordinate);
+  };
 
-    const points = properties.point_count;
+  const calculateDistance = (point1: any, point2: any) => {
+    if (!point1 || !point2) {
+      // Handle the case where either point is undefined or null
+      console.error('Invalid points for distance calculation');
+      setDistance(null);
+      return;
+    }
+
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = toRadians(point2.latitude - point1.latitude);
+    const dLon = toRadians(point2.longitude - point1.longitude);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(point1.latitude)) *
+        Math.cos(toRadians(point2.latitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in kilometers
+
+    setDistance(distance);
+  };
+
+  const toRadians = (angle: number) => {
+    return (angle * Math.PI) / 180;
+  };
+
+  const renderRoute = () => {
+    if (!userLocation || !destinationMarker) {
+      return null;
+    }
+
     return (
-      <Marker
-        key={`cluster-${id}`}
-        coordinate={{
-          longitude: geometry.coordinates[0],
-          latitude: geometry.coordinates[1],
-        }}
-        onPress={onPress}>
-        <View style={styles.marker}>
-          <Text
-            style={{
-              color: '#000',
-              textAlign: 'center',
-              fontFamily: 'mon-sb',
-            }}>
-            {points}
-          </Text>
-        </View>
-      </Marker>
+      <Polyline
+        coordinates={[
+          {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+          },
+          {
+            latitude: destinationMarker.latitude,
+            longitude: destinationMarker.longitude,
+          },
+        ]}
+        strokeWidth={3}
+        strokeColor={Colors.primary}
+      />
     );
   };
 
   return (
-    <View style={defaultStyles.container}>
+    <View style={styles.container}>
       <MapView
         ref={mapRef}
-        animationEnabled={false}
         style={StyleSheet.absoluteFillObject}
         initialRegion={INITIAL_REGION}
-        clusterColor="#fff"
-        clusterTextColor="#000"
-        clusterFontFamily="mon-sb"
-        renderCluster={renderCluster}
+        onPress={handleMapPress}
       >
-        {/* Render all our marker as usual */}
         {userLocation.latitude !== 0 && userLocation.longitude !== 0 && (
           <Marker
             coordinate={{
@@ -108,10 +147,20 @@ const ListingsMap = memo(({ listings }: Props) => {
             }}
           >
             <View style={styles.marker}>
-            <Ionicons name="location-sharp" size={24} color={Colors.primary} />
+              <Ionicons name="location-sharp" size={24} color={Colors.primary} />
             </View>
           </Marker>
         )}
+
+        {destinationMarker && (
+          <Marker
+            coordinate={destinationMarker}
+            title={`Distance: ${distance?.toFixed(2)} km`}
+            onPress={onMarkerSelected}
+          />
+        )}
+
+        {renderRoute()}
       </MapView>
       <TouchableOpacity style={styles.locateBtn} onPress={onLocateMe}>
         <Ionicons name="navigate" size={24} color={Colors.dark} />
@@ -138,10 +187,6 @@ const styles = StyleSheet.create({
       width: 1,
       height: 10,
     },
-  },
-  markerText: {
-    fontSize: 14,
-    fontFamily: 'mon-sb',
   },
   locateBtn: {
     position: 'absolute',
