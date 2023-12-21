@@ -1,27 +1,18 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Avatar, Card, Title } from 'react-native-paper';
+import { Avatar, Title } from 'react-native-paper';
 import Resource from '@/constants/Resource';
 
-interface ProfileState {
-  firstName: string;
-  lastName: string;
-  selectedImage: string | null;
-}
+class Profile extends Component {
+  state = {
+    firstName: '',
+    lastName: '',
+    selectedImage: null,
+  };
 
-class Profile extends Component<{}, ProfileState> {
-  constructor(props: {}) {
-    super(props);
-    this.state = {
-      firstName: '',
-      lastName: '',
-      selectedImage: null,
-    };
-  }
-
-  handleInputChange = (field: string, text: string) => {
-    this.setState({ [field]: text } as any);
+  handleInputChange = (field:string, text:string) => {
+    this.setState({ [field]: text });
   };
 
   handleImagePicker = async () => {
@@ -41,8 +32,8 @@ class Profile extends Component<{}, ProfileState> {
 
   render() {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <View style={{ alignItems: 'center' }}>
+      <View style={styles.container}>
+        <View style={styles.avatarContainer}>
           <Avatar.Image
             size={100}
             source={
@@ -50,61 +41,92 @@ class Profile extends Component<{}, ProfileState> {
                 ? { uri: this.state.selectedImage }
                 : { uri: Resource.image }
             }
-            style={{ borderRadius: 50 }}
+            style={styles.avatar}
           />
         </View>
-        <Title style={{ marginTop: 10, textAlign: 'center', color: '#2c3e50', fontSize: 20 }}>
-          Профиль
-        </Title>
+        <Title style={styles.title}>Профиль</Title>
         <TextInput
           placeholder="Имя"
           value={this.state.firstName}
           onChangeText={(text) => this.handleInputChange('firstName', text)}
-          style={{
-            marginTop: 16,
-            marginBottom: 16,
-            borderBottomWidth: 1,
-            paddingVertical: 8,
-            borderColor: '#3498db',
-          }}
+          style={styles.input}
         />
         <TextInput
           placeholder="Фамилия"
           value={this.state.lastName}
           onChangeText={(text) => this.handleInputChange('lastName', text)}
-          style={{
-            marginTop: 16,
-            marginBottom: 16,
-            borderBottomWidth: 1,
-            paddingVertical: 8,
-            borderColor: '#3498db',
-          }}
+          style={styles.input}
         />
 
         <TouchableOpacity
-          style={{
-            backgroundColor: '#2ecc71',
-            padding: 10,
-            borderRadius: 5,
-            marginBottom: 10,
-          }}
+          style={styles.button}
           onPress={this.handleImagePicker}
         >
-          <Text style={{ color: 'white', textAlign: 'center' }}>Выбрать фото</Text>
+          <Text style={styles.buttonText}>Выбрать фото</Text>
         </TouchableOpacity>
         {this.state.selectedImage && (
           <Image
             source={{ uri: this.state.selectedImage }}
-            style={{ width: '100%', height: 200, marginTop: 16, borderRadius: 8 }}
+            style={styles.image}
           />
         )}
 
-        <Text>
-          {this.state.firstName}  {this.state.lastName}
+        <Text style={styles.fullName}>
+          {this.state.firstName} {this.state.lastName}
         </Text>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    alignItems: 'center',
+  },
+  avatar: {
+    borderRadius: 50,
+  },
+  title: {
+    marginTop: 10,
+    textAlign: 'center',
+    color: '#2c3e50',
+    fontSize: 20,
+  },
+  input: {
+    marginTop: 16,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+    borderColor: '#3498db',
+    width: '80%',
+  },
+  button: {
+    backgroundColor: '#2ecc71',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '80%',
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+  image: {
+    width: '80%',
+    height: 200,
+    marginTop: 16,
+    borderRadius: 8,
+  },
+  fullName: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default Profile;
