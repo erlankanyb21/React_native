@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "airbnb",
-    "slug": "airbnb",
+    "name": "volunteer_app",
+    "slug": "volunteer_app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
